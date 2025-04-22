@@ -82,7 +82,7 @@ class Stupid_Simple_Login_Checker {
             'Stupid Simple',
             'manage_options',
             'stupidsimple',
-            array( $this, 'stupid_simple_parent_page' ), // ← changed!
+            array( $this, 'stupid_simple_parent_page' ),
             'dashicons-hammer',
             99
         );
