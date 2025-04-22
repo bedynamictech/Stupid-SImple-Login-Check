@@ -148,7 +148,7 @@ class Stupid_Simple_Login_Checker {
         $locked_ips = get_option( $this->option_key, [] );
         ?>
         <div class="wrap">
-            <h1><?php esc_html_e( 'Stupid Simple Login Check', 'stupid-simple-login-check' ); ?></h1>
+            <h1><?php esc_html_e( 'Login Check', 'stupid-simple-login-check' ); ?></h1>
             <table class="widefat">
                 <thead>
                     <tr>
