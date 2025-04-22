@@ -2,7 +2,7 @@
 /*
 Plugin Name: Stupid Simple Login Check
 Description: Adds a honeypot field, nonce check, and brute‑force protection to the Login page.
-Version: 1.2.3
+Version: 1.2.4
 Author: Dynamic Technologies
 Author URI: http://bedynamic.tech
 License: GPLv2 or later
@@ -105,7 +105,7 @@ class Stupid_Simple_Login_Checker {
             'Stupid Simple',
             'manage_options',
             'stupidsimple',
-            [ $this, 'stupid_simple_parent_page' ], // ← now correctly references the class method
+            [ $this, 'render_admin_page' ], // use render_admin_page for parent
             'dashicons-hammer',
             99
         );
@@ -118,15 +118,6 @@ class Stupid_Simple_Login_Checker {
             'sslc-lockout-log',
             [ $this, 'render_admin_page' ]
         );
-    }
-
-    public function stupid_simple_parent_page() {
-        ?>
-        <div class="wrap">
-          <h1>Thanks for using Stupid Simple plugins!</h1>
-          <p>This page doesn't contain anything useful, so here is some text.</p>
-        </div>
-        <?php
     }
 
     public function render_admin_page() {
@@ -148,13 +139,13 @@ class Stupid_Simple_Login_Checker {
         $locked_ips = get_option( $this->option_key, [] );
         ?>
         <div class="wrap">
-            <h1>Currently Locked Out IPs</h1>
+            <h1><?php esc_html_e( 'Stupid Simple Login Check', 'stupid-simple-login-check' ); ?></h1>
             <table class="widefat">
                 <thead>
                     <tr>
-                        <th>IP Address</th>
-                        <th>Locked Until</th>
-                        <th>Action</th>
+                        <th><?php esc_html_e( 'IP Address', 'stupid-simple-login-check' ); ?></th>
+                        <th><?php esc_html_e( 'Locked Until', 'stupid-simple-login-check' ); ?></th>
+                        <th><?php esc_html_e( 'Action', 'stupid-simple-login-check' ); ?></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -166,7 +157,7 @@ class Stupid_Simple_Login_Checker {
                                 <td>
                                     <a href="<?php echo esc_url( wp_nonce_url( add_query_arg( 'unblock_ip', $ip ), 'unblock_ip_action', 'unblock_ip_nonce' ) ); ?>"
                                        class="button">
-                                        Unlock
+                                        <?php esc_html_e( 'Unlock', 'stupid-simple-login-check' ); ?>
                                     </a>
                                 </td>
                             </tr>
