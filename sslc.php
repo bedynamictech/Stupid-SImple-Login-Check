@@ -82,20 +82,21 @@ class Stupid_Simple_Login_Checker {
             'Stupid Simple',
             'manage_options',
             'stupidsimple',
-            'stupid_simple_parent_page',
+            array( $this, 'stupid_simple_parent_page' ), // ← changed!
             'dashicons-hammer',
             99
         );
-
+    
         add_submenu_page(
             'stupidsimple',
             'Login Check',
             'Login Check',
             'manage_options',
             'sslc-lockout-log',
-            array($this, 'render_admin_page')
+            array( $this, 'render_admin_page' )
         );
     }
+    
 
     function stupid_simple_parent_page() {
         ?>
