@@ -1,4 +1,3 @@
-<?php
 /*
 Plugin Name: Stupid Simple Login Check
 Description: Adds a honeypot field, nonce check, and brute-force protection to the Login page.
@@ -82,21 +81,20 @@ class Stupid_Simple_Login_Checker {
             'Stupid Simple',
             'manage_options',
             'stupidsimple',
-            array( $this, 'stupid_simple_parent_page' ),
+            'stupid_simple_parent_page',
             'dashicons-hammer',
             99
         );
-    
+
         add_submenu_page(
             'stupidsimple',
             'Login Check',
             'Login Check',
             'manage_options',
             'sslc-lockout-log',
-            array( $this, 'render_admin_page' )
+            array($this, 'render_admin_page')
         );
     }
-    
 
     function stupid_simple_parent_page() {
         ?>
