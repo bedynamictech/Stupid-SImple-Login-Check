@@ -2,7 +2,7 @@
 /*
 Plugin Name:     Stupid Simple Login Check
 Description:     Adds a honeypot field, nonce check, and brute‑force protection to the Login page.
-Version:         1.2.4
+Version:         1.2.5
 Author:          Dynamic Technologies
 Author URI:      http://bedynamic.tech
 License:         GPLv2 or later
