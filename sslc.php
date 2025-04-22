@@ -1,12 +1,14 @@
 <?php
 /*
-Plugin Name: Stupid Simple Login Check
-Description: Adds a honeypot field, nonce check, and brute‑force protection to the Login page.
-Version: 1.2.4
-Author: Dynamic Technologies
-Author URI: http://bedynamic.tech
-License: GPLv2 or later
-License URI: http://www.gnu.org/licenses/gpl-2.0.html
+Plugin Name:     Stupid Simple Login Check
+Description:     Adds a honeypot field, nonce check, and brute‑force protection to the Login page.
+Version:         1.2.4
+Author:          Dynamic Technologies
+Author URI:      http://bedynamic.tech
+License:         GPLv2 or later
+License URI:     http://www.gnu.org/licenses/gpl-2.0.html
+Text Domain:     stupid-simple-login-check
+Domain Path:     /languages
 */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -20,10 +22,17 @@ class Stupid_Simple_Login_Checker {
     private $option_key       = 'sslc_locked_ips';
 
     public function __construct() {
-        add_action( 'login_form',          [ $this, 'add_honeypot_and_nonce' ] );
-        add_filter( 'authenticate',        [ $this, 'check_login' ], 30, 3 );
-        add_action( 'wp_login_failed',     [ $this, 'track_failed_login' ] );
-        add_action( 'admin_menu',          [ $this, 'setup_admin_menu' ] );
+        // load translations if you include .mo files in /languages
+        load_plugin_textdomain(
+            'stupid-simple-login-check',
+            false,
+            dirname( plugin_basename( __FILE__ ) ) . '/languages'
+        );
+
+        add_action( 'login_form',      [ $this, 'add_honeypot_and_nonce' ] );
+        add_filter( 'authenticate',    [ $this, 'check_login' ], 30, 3 );
+        add_action( 'wp_login_failed', [ $this, 'track_failed_login' ] );
+        add_action( 'admin_menu',      [ $this, 'setup_admin_menu' ] );
     }
 
     public function add_honeypot_and_nonce() {
@@ -105,7 +114,7 @@ class Stupid_Simple_Login_Checker {
             'Stupid Simple',
             'manage_options',
             'stupidsimple',
-            [ $this, 'render_admin_page' ], // use render_admin_page for parent
+            [ $this, 'render_admin_page' ],
             'dashicons-hammer',
             99
         );
@@ -129,10 +138,10 @@ class Stupid_Simple_Login_Checker {
         if ( isset( $_GET['unblock_ip'] ) ) {
             check_admin_referer( 'unblock_ip_action', 'unblock_ip_nonce' );
             $unblock_ip = sanitize_text_field( wp_unslash( $_GET['unblock_ip'] ) );
-            $locked_ips  = get_option( $this->option_key, [] );
+            $locked_ips = get_option( $this->option_key, [] );
             unset( $locked_ips[ $unblock_ip ] );
             update_option( $this->option_key, $locked_ips );
-            wp_safe_redirect( remove_query_arg( [ 'unblock_ip', '_wpnonce' ] ) );
+            wp_safe_redirect( remove_query_arg( [ 'unblock_ip', 'unblock_ip_nonce' ] ) );
             exit;
         }
 
@@ -143,9 +152,9 @@ class Stupid_Simple_Login_Checker {
             <table class="widefat">
                 <thead>
                     <tr>
-                        <th><?php esc_html_e( 'IP Address', 'stupid-simple-login-check' ); ?></th>
+                        <th><?php esc_html_e( 'IP Address',   'stupid-simple-login-check' ); ?></th>
                         <th><?php esc_html_e( 'Locked Until', 'stupid-simple-login-check' ); ?></th>
-                        <th><?php esc_html_e( 'Action', 'stupid-simple-login-check' ); ?></th>
+                        <th><?php esc_html_e( 'Action',       'stupid-simple-login-check' ); ?></th>
                     </tr>
                 </thead>
                 <tbody>
