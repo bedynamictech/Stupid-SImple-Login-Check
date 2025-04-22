@@ -1,28 +1,29 @@
+<?php
 /*
 Plugin Name: Stupid Simple Login Check
-Description: Adds a honeypot field, nonce check, and brute-force protection to the Login page.
-Version: 1.2.2
+Description: Adds a honeypot field, nonce check, and brute‑force protection to the Login page.
+Version: 1.2.3
 Author: Dynamic Technologies
 Author URI: http://bedynamic.tech
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 */
 
-if (!defined('ABSPATH')) {
+if ( ! defined( 'ABSPATH' ) ) {
     exit; // Ensure the script is not accessed directly
 }
 
 class Stupid_Simple_Login_Checker {
 
-    private $max_attempts = 5;
+    private $max_attempts     = 5;
     private $lockout_duration = 300; // in seconds (5 minutes)
-    private $option_key = 'sslc_locked_ips';
+    private $option_key       = 'sslc_locked_ips';
 
     public function __construct() {
-        add_action('login_form', array($this, 'add_honeypot_and_nonce'));
-        add_filter('authenticate', array($this, 'check_login'), 30, 3);
-        add_action('wp_login_failed', array($this, 'track_failed_login'));
-        add_action('admin_menu', array($this, 'setup_admin_menu'));
+        add_action( 'login_form',          [ $this, 'add_honeypot_and_nonce' ] );
+        add_filter( 'authenticate',        [ $this, 'check_login' ], 30, 3 );
+        add_action( 'wp_login_failed',     [ $this, 'track_failed_login' ] );
+        add_action( 'admin_menu',          [ $this, 'setup_admin_menu' ] );
     }
 
     public function add_honeypot_and_nonce() {
@@ -31,44 +32,67 @@ class Stupid_Simple_Login_Checker {
         echo '<label for="sslc_honeypot_visual">Honeypot</label>';
         echo '<input type="text" id="sslc_honeypot_visual" name="sslc_honeypot_visual" autocomplete="off" tabindex="-1">';
         echo '</div>';
-        wp_nonce_field('sslc_login_nonce', 'sslc_nonce');
+        wp_nonce_field( 'sslc_login_nonce', 'sslc_nonce' );
     }
 
-    public function check_login($user, $username, $password) {
-        $ip = $this->get_user_ip();
+    public function check_login( $user, $username, $password ) {
+        $ip         = $this->get_user_ip();
+        $locked_ips = get_option( $this->option_key, [] );
 
-        $locked_ips = get_option($this->option_key, array());
-        if (isset($locked_ips[$ip]) && time() < $locked_ips[$ip]['locked_until']) {
-            return new WP_Error('sslc_locked', __('<strong>ERROR</strong>: Too many failed login attempts. Try again later.', 'stupid-simple-login-checker'));
+        if ( isset( $locked_ips[ $ip ] ) && time() < $locked_ips[ $ip ]['locked_until'] ) {
+            return new WP_Error(
+                'sslc_locked',
+                __(
+                    '<strong>ERROR</strong>: Too many failed login attempts. Try again later.',
+                    'stupid-simple-login-check'
+                )
+            );
         }
 
-        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['log'])) {
-            if (!isset($_POST['sslc_nonce']) || !wp_verify_nonce($_POST['sslc_nonce'], 'sslc_login_nonce')) {
-                return new WP_Error('sslc_error', __('<strong>ERROR</strong>: Spam detected!', 'stupid-simple-login-checker'));
+        if ( 'POST' === $_SERVER['REQUEST_METHOD'] && isset( $_POST['log'] ) ) {
+            if ( empty( $_POST['sslc_nonce'] ) || ! wp_verify_nonce( $_POST['sslc_nonce'], 'sslc_login_nonce' ) ) {
+                return new WP_Error(
+                    'sslc_error',
+                    __(
+                        '<strong>ERROR</strong>: Spam detected!',
+                        'stupid-simple-login-check'
+                    )
+                );
             }
-            if (!empty($_POST['sslc_honeypot']) || !empty($_POST['sslc_honeypot_visual'])) {
-                return new WP_Error('sslc_error', __('<strong>ERROR</strong>: Spam detected!', 'stupid-simple-login-checker'));
+
+            if ( ! empty( $_POST['sslc_honeypot'] ) || ! empty( $_POST['sslc_honeypot_visual'] ) ) {
+                return new WP_Error(
+                    'sslc_error',
+                    __(
+                        '<strong>ERROR</strong>: Spam detected!',
+                        'stupid-simple-login-check'
+                    )
+                );
             }
         }
 
         return $user;
     }
 
-    public function track_failed_login($username) {
-        $ip = $this->get_user_ip();
-        $locked_ips = get_option($this->option_key, array());
+    public function track_failed_login( $username ) {
+        $ip         = $this->get_user_ip();
+        $locked_ips = get_option( $this->option_key, [] );
 
-        if (!isset($locked_ips[$ip])) {
-            $locked_ips[$ip] = array('attempts' => 0, 'locked_until' => 0);
+        if ( ! isset( $locked_ips[ $ip ] ) ) {
+            $locked_ips[ $ip ] = [
+                'attempts'     => 0,
+                'locked_until' => 0,
+            ];
         }
 
-        $locked_ips[$ip]['attempts']++;
-        if ($locked_ips[$ip]['attempts'] >= $this->max_attempts) {
-            $locked_ips[$ip]['locked_until'] = time() + $this->lockout_duration;
-            $locked_ips[$ip]['attempts'] = 0; // reset attempts after lockout
+        $locked_ips[ $ip ]['attempts']++;
+
+        if ( $locked_ips[ $ip ]['attempts'] >= $this->max_attempts ) {
+            $locked_ips[ $ip ]['locked_until'] = time() + $this->lockout_duration;
+            $locked_ips[ $ip ]['attempts']     = 0;
         }
 
-        update_option($this->option_key, $locked_ips);
+        update_option( $this->option_key, $locked_ips );
     }
 
     private function get_user_ip() {
@@ -81,7 +105,7 @@ class Stupid_Simple_Login_Checker {
             'Stupid Simple',
             'manage_options',
             'stupidsimple',
-            'stupid_simple_parent_page',
+            [ $this, 'stupid_simple_parent_page' ], // ← now correctly references the class method
             'dashicons-hammer',
             99
         );
@@ -92,11 +116,11 @@ class Stupid_Simple_Login_Checker {
             'Login Check',
             'manage_options',
             'sslc-lockout-log',
-            array($this, 'render_admin_page')
+            [ $this, 'render_admin_page' ]
         );
     }
 
-    function stupid_simple_parent_page() {
+    public function stupid_simple_parent_page() {
         ?>
         <div class="wrap">
           <h1>Thanks for using Stupid Simple plugins!</h1>
@@ -106,31 +130,52 @@ class Stupid_Simple_Login_Checker {
     }
 
     public function render_admin_page() {
-        if (!current_user_can('manage_options')) {
+        if ( ! current_user_can( 'manage_options' ) ) {
             return;
         }
 
         // Handle unblock before any output
-        if (isset($_GET['unblock_ip']) && current_user_can('manage_options')) {
-            $unblock_ip = sanitize_text_field($_GET['unblock_ip']);
-            $locked_ips = get_option($this->option_key, array());
-            unset($locked_ips[$unblock_ip]);
-            update_option($this->option_key, $locked_ips);
-            wp_safe_redirect(remove_query_arg('unblock_ip'));
+        if ( isset( $_GET['unblock_ip'] ) ) {
+            check_admin_referer( 'unblock_ip_action', 'unblock_ip_nonce' );
+            $unblock_ip = sanitize_text_field( wp_unslash( $_GET['unblock_ip'] ) );
+            $locked_ips  = get_option( $this->option_key, [] );
+            unset( $locked_ips[ $unblock_ip ] );
+            update_option( $this->option_key, $locked_ips );
+            wp_safe_redirect( remove_query_arg( [ 'unblock_ip', '_wpnonce' ] ) );
             exit;
         }
 
-        $locked_ips = get_option($this->option_key, array());
-
-        echo '<div class="wrap"><h1>Currently Locked Out IPs</h1><table class="widefat"><thead><tr><th>IP Address</th><th>Locked Until</th><th>Action</th></tr></thead><tbody>';
-
-        foreach ($locked_ips as $ip => $data) {
-            if (time() < $data['locked_until']) {
-                echo '<tr><td>' . esc_html($ip) . '</td><td>' . date('Y-m-d H:i:s', $data['locked_until']) . '</td><td><a href="' . esc_url(add_query_arg(['unblock_ip' => $ip])) . '" class="button">Unlock</a></td></tr>';
-            }
-        }
-
-        echo '</tbody></table></div>';
+        $locked_ips = get_option( $this->option_key, [] );
+        ?>
+        <div class="wrap">
+            <h1>Currently Locked Out IPs</h1>
+            <table class="widefat">
+                <thead>
+                    <tr>
+                        <th>IP Address</th>
+                        <th>Locked Until</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ( $locked_ips as $ip => $data ) : ?>
+                        <?php if ( time() < $data['locked_until'] ) : ?>
+                            <tr>
+                                <td><?php echo esc_html( $ip ); ?></td>
+                                <td><?php echo esc_html( date( 'Y-m-d H:i:s', $data['locked_until'] ) ); ?></td>
+                                <td>
+                                    <a href="<?php echo esc_url( wp_nonce_url( add_query_arg( 'unblock_ip', $ip ), 'unblock_ip_action', 'unblock_ip_nonce' ) ); ?>"
+                                       class="button">
+                                        Unlock
+                                    </a>
+                                </td>
+                            </tr>
+                        <?php endif; ?>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+        <?php
     }
 }
 
