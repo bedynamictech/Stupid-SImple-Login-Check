@@ -2,7 +2,7 @@
 /*
 Plugin Name: Stupid Simple Login Check
 Description: Adds a honeypot field, nonce check, and brute-force protection to the Login page.
-Version: 1.2.1
+Version: 1.2.2
 Author: Dynamic Technologies
 Author URI: http://bedynamic.tech
 License: GPLv2 or later
@@ -82,10 +82,7 @@ class Stupid_Simple_Login_Checker {
             'Stupid Simple',
             'manage_options',
             'stupidsimple',
-            function () {
-                wp_redirect('https://bedynamic.tech/stupid-simple/');
-                exit;
-            },
+            'stupid_simple_parent_page',
             'dashicons-hammer',
             99
         );
@@ -98,6 +95,15 @@ class Stupid_Simple_Login_Checker {
             'sslc-lockout-log',
             array($this, 'render_admin_page')
         );
+    }
+
+    function stupid_simple_parent_page() {
+        ?>
+        <div class="wrap">
+          <h1>Thanks for using Stupid Simple plugins!</h1>
+          <p>This page doesn't contain anything useful, so here is some text.</p>
+        </div>
+        <?php
     }
 
     public function render_admin_page() {
