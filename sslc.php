@@ -1,14 +1,15 @@
 <?php
 /*
-Plugin Name:     Stupid Simple Login Check
-Description:     Adds a honeypot field, nonce check, and brute‑force protection to the Login page.
-Version:         1.2.5
-Author:          Dynamic Technologies
-Author URI:      http://bedynamic.tech
-License:         GPLv2 or later
-License URI:     http://www.gnu.org/licenses/gpl-2.0.html
-Text Domain:     stupid-simple-login-check
-Domain Path:     /languages
+Plugin Name: Stupid Simple Login Check
+Description: Adds a honeypot field, nonce check, and brute‑force protection to the Login page.
+Version: 1.2.5
+Author: Dynamic Technologies
+Author URI: http://bedynamic.tech
+Plugin URI: https://github.com/bedynamictech/Stupid-Simple-Login-Check
+License: GPLv2 or later
+License URI: http://www.gnu.org/licenses/gpl-2.0.html
+Text Domain: stupid-simple-login-check
+Domain Path: /languages
 */
 
 if ( ! defined( 'ABSPATH' ) ) {
