@@ -1,16 +1,16 @@
 <?php
-/*
-Plugin Name: Stupid Simple Login Check
-Description: Adds a honeypot field, nonce check, and brute‑force protection to the Login page.
-Version: 1.2.5
-Author: Dynamic Technologies
-Author URI: http://bedynamic.tech
-Plugin URI: https://github.com/bedynamictech/Stupid-Simple-Login-Check
-License: GPLv2 or later
-License URI: http://www.gnu.org/licenses/gpl-2.0.html
-Text Domain: stupid-simple-login-check
-Domain Path: /languages
-*/
+/**
+ * Plugin Name: Stupid Simple Login Check
+ * Description: Adds a honeypot field, nonce check, and brute-force protection to the Login page.
+ * Version: 1.2.5
+ * Author: Dynamic Technologies
+ * Author URI: https://bedynamic.tech
+ * Plugin URI: https://github.com/bedynamictech/Stupid-Simple-Login-Check
+ * License: GPLv2 or later
+ * License URI: http://www.gnu.org/licenses/gpl-2.0.html
+ * Text Domain: stupid-simple-login-check
+ * Domain Path: /languages
+ */
 
 if ( ! defined( 'ABSPATH' ) ) {
     exit; // Ensure the script is not accessed directly
@@ -181,3 +181,11 @@ class Stupid_Simple_Login_Checker {
 }
 
 new Stupid_Simple_Login_Checker();
+
+// Add Settings link on Plugins page
+add_filter( 'plugin_action_links_' . plugin_basename( __FILE__ ), 'sslc_action_links' );
+function sslc_action_links( $links ) {
+    $settings_link = '<a href="' . admin_url( 'admin.php?page=sslc-lockout-log' ) . '">Settings</a>';
+    array_unshift( $links, $settings_link );
+    return $links;
+}
